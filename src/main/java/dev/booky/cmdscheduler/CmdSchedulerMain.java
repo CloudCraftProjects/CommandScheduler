@@ -17,9 +17,17 @@ import static io.papermc.paper.util.Tick.tick;
 @NullMarked
 public class CmdSchedulerMain extends JavaPlugin {
 
+    private final CmdSchedulerCommand command = new CmdSchedulerCommand(this);
+
     @Override
     public void onEnable() {
         this.reloadTasks();
+        this.command.register();
+    }
+
+    @Override
+    public void onDisable() {
+        this.command.unregister();
     }
 
     public void reloadTasks() {

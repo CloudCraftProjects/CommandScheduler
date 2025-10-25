@@ -23,9 +23,12 @@ dependencies {
 
     val cloudcore = "1.1.0-SNAPSHOT"
     compileOnlyApi("dev.booky:cloudcore:$cloudcore")
+    val commandapi = "11.0.0"
+    compileOnly("dev.jorel:commandapi-paper-core:$commandapi")
 
     // testserver dependency plugins (maven)
     plugin("dev.booky:cloudcore:$cloudcore:all")
+    plugin("dev.jorel:commandapi-paper-plugin:$commandapi")
 }
 
 java {
@@ -47,7 +50,7 @@ bukkit {
     main = "$group.cmdscheduler.CmdSchedulerMain"
     apiVersion = "1.21.9"
     authors = listOf("booky10")
-    depend = listOf("CloudCore")
+    depend = listOf("CommandAPI", "CloudCore")
 }
 
 tasks {
