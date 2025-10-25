@@ -2,22 +2,29 @@ package dev.booky.cmdscheduler;
 // Created by booky10 in CommandScheduler (15:30 25.10.2025)
 
 import dev.booky.cloudcore.config.ConfigurateLoader;
-import io.papermc.paper.util.Tick;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+
+import static io.papermc.paper.util.Tick.tick;
 
 @NullMarked
 public class CmdSchedulerMain extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        this.reloadTasks();
+    }
+
+    public void reloadTasks() {
         CmdSchedulerConfig config = this.loadConfig();
+        Bukkit.getScheduler().cancelTasks(this);
         this.registerFixedTasks(config.getFixed());
     }
 
@@ -33,9 +40,13 @@ public class CmdSchedulerMain extends JavaPlugin {
         if (now.isAfter(time)) {
             return; // time has passed, ignore
         }
-        long delayTicks = Tick.tick().between(Instant.now(), time);
-        CmdSchedulerTask task = new CmdSchedulerTask(commands);
-        Bukkit.getScheduler().runTaskLater(this, task, delayTicks);
+        Duration delay = Duration.between(now, time);
+        Bukkit.getScheduler().runTaskLater(this,
+                new CmdSchedulerTask(commands),
+                tick().fromDuration(delay));
+
+        this.getSLF4JLogger().info("Registered {} command(s) to execute in {}: {}",
+                commands.size(), delay, commands);
     }
 
     private CmdSchedulerConfig loadConfig() {
