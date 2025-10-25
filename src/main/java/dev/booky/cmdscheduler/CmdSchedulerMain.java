@@ -44,13 +44,16 @@ public class CmdSchedulerMain extends JavaPlugin {
     }
 
     private void registerFixedTask(Instant time, List<String> commands) {
+        if (commands.isEmpty()) {
+            return; // useless task, don't register
+        }
         Instant now = Instant.now();
         if (now.isAfter(time)) {
             return; // time has passed, ignore
         }
         Duration delay = Duration.between(now, time);
         Bukkit.getScheduler().runTaskLater(this,
-                new CmdSchedulerTask(commands),
+                new CmdSchedulerTask(this.getSLF4JLogger(), commands),
                 tick().fromDuration(delay));
 
         this.getSLF4JLogger().info("Registered {} command(s) to execute in {}: {}",

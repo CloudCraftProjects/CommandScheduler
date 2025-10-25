@@ -20,7 +20,7 @@ public final class CmdSchedulerCommand {
     }
 
     public void register() {
-        this.unregister();
+//        this.unregister();
         new CommandTree(ALIASES[0])
                 .withAliases(Arrays.copyOfRange(ALIASES, 1, ALIASES.length))
                 .withPermission("commandscheduler.command")

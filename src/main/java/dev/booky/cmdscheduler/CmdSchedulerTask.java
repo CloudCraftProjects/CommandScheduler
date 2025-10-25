@@ -4,15 +4,18 @@ package dev.booky.cmdscheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.jspecify.annotations.NullMarked;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 @NullMarked
 public final class CmdSchedulerTask implements Runnable {
 
+    private final Logger logger;
     private final List<String> commands;
 
-    public CmdSchedulerTask(List<String> commands) {
+    public CmdSchedulerTask(Logger logger, List<String> commands) {
+        this.logger = logger;
         this.commands = commands;
     }
 
@@ -20,6 +23,7 @@ public final class CmdSchedulerTask implements Runnable {
     public void run() {
         ConsoleCommandSender sender = Bukkit.getConsoleSender();
         for (String command : this.commands) {
+            this.logger.info("Executing scheduled command: {}", command);
             Bukkit.dispatchCommand(sender, command);
         }
     }
