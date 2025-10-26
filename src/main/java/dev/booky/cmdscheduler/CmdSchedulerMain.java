@@ -2,22 +2,29 @@ package dev.booky.cmdscheduler;
 // Created by booky10 in CommandScheduler (15:30 25.10.2025)
 
 import dev.booky.cloudcore.config.ConfigurateLoader;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static io.papermc.paper.util.Tick.tick;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 @NullMarked
 public class CmdSchedulerMain extends JavaPlugin {
 
     private final CmdSchedulerCommand command = new CmdSchedulerCommand(this);
+
+    // schedule tasks using a async executor service running independently
+    // of the main server thread, as this plugin shouldn't be bothered by lag
+    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private final List<ScheduledFuture<?>> tasks = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -28,11 +35,20 @@ public class CmdSchedulerMain extends JavaPlugin {
     @Override
     public void onDisable() {
         this.command.unregister();
+        this.cancelTasks();
+        this.service.shutdownNow();
+    }
+
+    public void cancelTasks() {
+        for (ScheduledFuture<?> task : this.tasks) {
+            task.cancel(false);
+        }
+        this.tasks.clear();
     }
 
     public void reloadTasks() {
+        this.cancelTasks();
         CmdSchedulerConfig config = this.loadConfig();
-        Bukkit.getScheduler().cancelTasks(this);
         this.registerFixedTasks(config.getFixed());
     }
 
@@ -52,9 +68,9 @@ public class CmdSchedulerMain extends JavaPlugin {
             return; // time has passed, ignore
         }
         Duration delay = Duration.between(now, time);
-        Bukkit.getScheduler().runTaskLater(this,
-                new CmdSchedulerTask(this.getSLF4JLogger(), commands),
-                tick().fromDuration(delay));
+        ScheduledFuture<?> task = this.service.schedule(new CmdSchedulerTask(this, commands),
+                delay.toMillis(), TimeUnit.MILLISECONDS);
+        this.tasks.add(task);
 
         this.getSLF4JLogger().info("Registered {} command(s) to execute in {}: {}",
                 commands.size(), delay, commands);

@@ -6,12 +6,10 @@ import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Arrays;
-
 @NullMarked
 public final class CmdSchedulerCommand {
 
-    private static final String[] ALIASES = {"commandscheduler", "cmdscheduler", "cmdsched"};
+    private static final String LABEL = "cmdsched";
 
     private final CmdSchedulerMain plugin;
 
@@ -20,9 +18,7 @@ public final class CmdSchedulerCommand {
     }
 
     public void register() {
-//        this.unregister();
-        new CommandTree(ALIASES[0])
-                .withAliases(Arrays.copyOfRange(ALIASES, 1, ALIASES.length))
+        new CommandTree(LABEL)
                 .withPermission("commandscheduler.command")
                 .then(new LiteralArgument("reload")
                         .withPermission("commandscheduler.command.reload")
@@ -34,8 +30,6 @@ public final class CmdSchedulerCommand {
     }
 
     public void unregister() {
-        for (String alias : ALIASES) {
-            CommandAPI.unregister(alias, true);
-        }
+        CommandAPI.unregister(LABEL, true);
     }
 }
